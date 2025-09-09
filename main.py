@@ -82,10 +82,47 @@ summary_prompt = PromptTemplate.from_template(
     Transcript:
     ```{transcript}```
 
-    Provide a brief summary of the candidate's responses and do not use any addition symbols like asterisk.
+    Provide a brief summary of the candidate's responses.
+    DO NOT use any addition symbols like asterisk.
     """
 )
 summary_chain = LLMChain(llm=llm, prompt=summary_prompt)
+FAQ_DOCUMENT = None # Placeholder for FAQ document content
+
+# ----------------------------
+# Q&A Prompt
+# ----------------------------
+qa_prompt = PromptTemplate.from_template(
+    """You are an HR assistant.
+    Answer the following question based on the provided FAQ document.
+
+    FAQ:
+    ```{FAQ_DOCUMENT}```
+
+    Question:
+    ```{question}```
+
+    Provide a concise and relevant answer based on the context.
+    Do not make up answers if the information is not available in the FAQ document, just tell that you do not know.
+    Do not use any addition symbols like asterisk.
+    """
+)
+qa_chain = LLMChain(llm=llm, prompt=qa_prompt)
+
+# ----------------------------
+# Question/No Question Prompt
+# ----------------------------
+no_question_prompt = PromptTemplate.from_template( """You are a helpful assistant.
+    Decide if the following user input means they have no questions.
+
+    User input:
+    "{user_input}"
+
+    Answer with ONLY one word:
+    - "no_question" if the user indicates they do not have any questions.
+    - "has_question" if the user is actually asking something.
+    """)
+no_question_chain = LLMChain(llm=llm, prompt=no_question_prompt)
 
 
 # ----------------------------
@@ -239,6 +276,28 @@ for question in interview_questions:
             f"No valid response after {validation_attempts} attempts: {transcription}"
         )
     print("-" * 50)
+
+
+# ----------------------------
+# Q&A
+# ----------------------------
+speak_text_in_memory("If you have any questions for me, feel free to ask now. If not, you can say 'no questions' to proceed.")
+csv_log_responses("If you have any questions for me, feel free to ask now. If not, you can say 'no questions' to proceed.", speaker="Bot")
+while True:
+    user_question = input("Your question (or type 'no questions' to finish): ")  # Use input() for local testing without voice
+    csv_log_responses(user_question, speaker="User")
+    intent = no_question_chain.invoke({"user_input": user_question})["text"].strip().lower()
+    if intent == "no_question":
+        break
+    if FAQ_DOCUMENT:
+        answer = qa_chain.invoke({"FAQ_DOCUMENT": FAQ_DOCUMENT, "question": user_question})["text"]
+        speak_text_in_memory(answer)
+        csv_log_responses(user_question, speaker="User")
+        csv_log_responses(answer, speaker="Bot")
+    else:
+        speak_text_in_memory("Sorry, I don't have any information to answer your question. We will check it later and let you know.")
+        csv_log_responses(user_question, speaker="User")
+        csv_log_responses("No information available to answer the question.", speaker="Bot")
 
 
 # ----------------------------
