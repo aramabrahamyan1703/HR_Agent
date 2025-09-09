@@ -83,6 +83,8 @@ summary_prompt = PromptTemplate.from_template(
     ```{transcript}```
 
     Provide a brief summary of the candidate's responses.
+    Do NOT include any headers, lists, or bullet points.
+    Use ONLY plain text of the summary.
     DO NOT use any addition symbols like asterisk.
     """
 )
