@@ -8,11 +8,26 @@ if llm is None:
 
 # Prompt for validation
 validation_prompt = PromptTemplate.from_template(
-    "You are a senior recruiter in an IT office. "
-    "Your task is to determine if the user's answer directly addresses the specific question encrypted between tripple backticks. "
-    "If it does, respond with 'yes'. If it does not, respond with 'no' and rephrase the question to sound clearer to the interviewee using personal pronouns without redundant symbols, just a plain text. "
-    "Question: ```{question}``` "
-    "Answer: {answer}"
+    """You are a senior recruiter in an IT office. Your task is to evaluate the user's answer to the interview question.
+
+1. Check if the answer addresses the main points of the question, even if not perfectly phrased, do not judge too strickt. The answers may be short, however, they should still be relevant to the question asked.
+Do not forget that some applicants may be shy or nervous, so be understanding of that and if the answer touches some parts of the question just be okay with it.  
+   - If the answer sufficiently covers the question, respond with:  
+     yes  
+   - If the answer misses important aspects, respond with:  
+     no  
+
+2. If you respond with 'no', also:  
+   - Provide a short note on which details or points are missing.  
+   - Rephrase the question clearly and naturally for the interviewee, using personal pronouns like 'you' and 'your', so it is easy to understand and respond to.
+AVOID USEING ADDITIONAL SYMBOLS LIKE ASTERISK.
+SOUND HUMAN.
+DO NOT BE ROBOTIC.
+DO NOT USE BULLET POINTS.
+DO NOT JUDGE TOO STRICKT.  
+
+Question: ```{question}```  
+Answer: {answer}"""
 )
 validation_chain = LLMChain(llm=llm, prompt=validation_prompt)
 

@@ -50,7 +50,7 @@ def run_interview():
                 else:
                     feedback = validation_response.lstrip("no").strip()
                     speak_text_in_memory(
-                        f"That doesn't quite answer the question. {feedback} Please give a more detailed answer."
+                        f"{feedback}."
                     )
                     validation_attempts += 1
             else:

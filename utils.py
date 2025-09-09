@@ -1,10 +1,11 @@
 import os
 import io
 import time
-import speech_recognition as sr
 from gtts import gTTS
 from pydub import AudioSegment
 from pydub.playback import play
+import sounddevice as sd
+import vosk
 import json
 import csv
 from datetime import datetime
@@ -19,33 +20,68 @@ def speak_text_in_memory(text):
     audio = AudioSegment.from_file(mp3_fp, format="mp3")
     play(audio)
 
+
 # Speech-to-text function
 def transcribe_audio_input():
-    """Listens for and transcribes audio input from the user."""
-    r = sr.Recognizer()
+    model_path = "vosk-model-small-en-us-0.15"  # Path to the Vosk model directory
+    
+    # Initialize a string to store the full transcription
+    full_transcription = ""
 
-    with sr.Microphone() as source:
-        r.adjust_for_ambient_noise(source, duration=1)
-        print("Listening...")
-        silence_start = None
+    # 1. Load the Vosk model
+    try:
+        model = vosk.Model(model_path)
+    except Exception as e:
+        print(f"Failed to load Vosk model from path '{model_path}': {e}")
+        print("Please ensure the path is correct and the model is unzipped.")
+        return ""
 
-        while True:
-            audio = r.listen(source, timeout=None, phrase_time_limit=None)
-            try:
-                text = r.recognize_google(audio)
-                print("Heard:", text)
-                silence_start = None
-                return text
-            except sr.UnknownValueError:
-                if silence_start is None:
-                    silence_start = time.time()
+    # 2. Configure audio stream parameters
+    samplerate = 16000
+    try:
+        device_info = sd.query_devices(None, 'input')
+        device_id = device_info['index']
+    except Exception as e:
+        print(f"Could not find a suitable audio input device. Please check your setup. Error: {e}")
+        return ""
+
+    # 3. Create the recognizer
+    recognizer = vosk.KaldiRecognizer(model, samplerate)
+    print("Listening for continuous speech... Press Ctrl+C to stop.")
+
+    # 4. Process audio stream in a loop
+    try:
+        with sd.RawInputStream(samplerate=samplerate, blocksize=2000, device=device_id, dtype='int16', channels=1) as stream:
+            while True:
+                data, overflow = stream.read(stream.blocksize)
+                if overflow:
+                    print("Audio buffer overflow detected.")
+                
+                wav_data = bytes(data)
+
+                if recognizer.AcceptWaveform(wav_data):
+                    result = json.loads(recognizer.Result())
+                    text = result.get('text', '')
+                    if text:
+                        # Append the recognized phrase to the full transcription string
+                        full_transcription += " " + text
                 else:
-                    if time.time() - silence_start > 3:
-                        print(">>> Silence detected for more than 3s, TRIGGER <<<")
-                        return None
-            except sr.RequestError as e:
-                print(f"Could not request results from Google Speech Recognition service; {e}")
-                return None
+                    partial_result = json.loads(recognizer.PartialResult())
+                    partial_text = partial_result.get('partial', '')
+
+    except KeyboardInterrupt:
+        print("\nTranscription stopped by user.")
+    except Exception as e:
+        print(f"\nAn error occurred: {e}")
+    finally:
+        # After the loop breaks, get any remaining transcription
+        final_result = json.loads(recognizer.FinalResult())
+        text = final_result.get('text', '')
+        if text:
+            full_transcription += " " + text
+            
+        return full_transcription.strip()
+
 
 # JSON output function
 def json_output_responses(responses, json_chain, filename="interview_responses.json"):
