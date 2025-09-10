@@ -21,7 +21,7 @@ def index():
     return render_template("index.html")
 
 
-# ✅ CHANGE: Replace speak_text_in_memory with socket emit wrapper
+
 def speak_and_emit(text):
     socketio.emit("bot_speaking", {"text": text})
     speak_text_in_memory(text)
@@ -42,12 +42,9 @@ def handle_start(_data):
     thread.start()
 
 
-# ✅ CHANGE: user_end_turn now simulates Enter
 @socketio.on("user_end_turn")
 def handle_user_end_turn(_data):
     """When user clicks End Turn, simulate Enter"""
-    # Instead of calling transcribe immediately,
-    # we just signal Enter to stop recording
     event_queue.put("enter")
     socketio.emit("user_speaking", {"text": "⏎ Enter pressed"})
 

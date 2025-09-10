@@ -9,6 +9,11 @@ import vosk
 import json
 import csv
 from datetime import datetime
+from dotenv import load_dotenv
+
+load_dotenv()
+
+VOSK_PATH = os.getenv("VOSK_PATH")
 
 # TTS function
 def speak_text_in_memory(text):
@@ -28,7 +33,7 @@ import json
 import threading
 
 def transcribe_audio_input():
-    model_path = "vosk-model-small-en-us-0.15"  # Path to the Vosk model directory
+    model_path = VOSK_PATH  # Path to the Vosk model directory
     full_transcription = ""
     stop_flag = {"stop": False}  # Use a mutable object for thread-safe flag
 

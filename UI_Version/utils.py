@@ -9,7 +9,12 @@ import vosk
 import json
 import csv
 from datetime import datetime
+from dotenv import load_dotenv
 from global_control import event_queue
+
+load_dotenv()
+
+VOSK_PATH = os.getenv("VOSK_PATH")
 
 # TTS function
 def speak_text_in_memory(text):
@@ -29,7 +34,7 @@ import json
 import threading
 
 def transcribe_audio_input():
-    model_path = "vosk-model-small-en-us-0.15"
+    model_path = VOSK_PATH
     full_transcription = ""
     stop_flag = {"stop": False}
 
@@ -47,7 +52,6 @@ def transcribe_audio_input():
         print(f"Audio input device error: {e}")
         return ""
 
-    # ✅ CHANGE: Instead of waiting for raw Enter, we check queue
     def wait_for_enter():
         while True:
             event = event_queue.get()  # blocking wait
