@@ -22,64 +22,71 @@ def speak_text_in_memory(text):
 
 
 # Speech-to-text function
+import vosk
+import sounddevice as sd
+import json
+import threading
+
 def transcribe_audio_input():
     model_path = "vosk-model-small-en-us-0.15"  # Path to the Vosk model directory
-    
-    # Initialize a string to store the full transcription
     full_transcription = ""
+    stop_flag = {"stop": False}  # Use a mutable object for thread-safe flag
 
     # 1. Load the Vosk model
     try:
         model = vosk.Model(model_path)
     except Exception as e:
-        print(f"Failed to load Vosk model from path '{model_path}': {e}")
-        print("Please ensure the path is correct and the model is unzipped.")
+        print(f"Failed to load Vosk model: {e}")
         return ""
 
-    # 2. Configure audio stream parameters
+    # 2. Configure audio input
     samplerate = 16000
     try:
         device_info = sd.query_devices(None, 'input')
         device_id = device_info['index']
     except Exception as e:
-        print(f"Could not find a suitable audio input device. Please check your setup. Error: {e}")
+        print(f"Audio input device error: {e}")
         return ""
 
-    # 3. Create the recognizer
-    recognizer = vosk.KaldiRecognizer(model, samplerate)
-    print("Listening for continuous speech... Press Ctrl+C to stop.")
+    # 3. Function to detect Enter key press
+    def wait_for_enter():
+        input("Press Enter to stop transcription...\n")
+        stop_flag["stop"] = True
 
-    # 4. Process audio stream in a loop
+    # Start the Enter key listener in a separate thread
+    threading.Thread(target=wait_for_enter, daemon=True).start()
+
+    recognizer = vosk.KaldiRecognizer(model, samplerate)
+    print("Listening for continuous speech...")
+
     try:
-        with sd.RawInputStream(samplerate=samplerate, blocksize=2000, device=device_id, dtype='int16', channels=1) as stream:
-            while True:
+        with sd.RawInputStream(samplerate=samplerate, blocksize=2000,
+                               device=device_id, dtype='int16', channels=1) as stream:
+            while not stop_flag["stop"]:
                 data, overflow = stream.read(stream.blocksize)
                 if overflow:
                     print("Audio buffer overflow detected.")
-                
+
                 wav_data = bytes(data)
 
                 if recognizer.AcceptWaveform(wav_data):
                     result = json.loads(recognizer.Result())
                     text = result.get('text', '')
                     if text:
-                        # Append the recognized phrase to the full transcription string
                         full_transcription += " " + text
                 else:
                     partial_result = json.loads(recognizer.PartialResult())
                     partial_text = partial_result.get('partial', '')
 
-    except KeyboardInterrupt:
-        print("\nTranscription stopped by user.")
     except Exception as e:
         print(f"\nAn error occurred: {e}")
     finally:
-        # After the loop breaks, get any remaining transcription
+        # Get any remaining transcription
         final_result = json.loads(recognizer.FinalResult())
         text = final_result.get('text', '')
         if text:
             full_transcription += " " + text
-            
+
         return full_transcription.strip()
 
 

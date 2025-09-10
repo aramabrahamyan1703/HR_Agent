@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Interview</title>
+  <style>
+    body { margin:0; font-family:Arial,sans-serif; background:#202124; color:white; display:flex; flex-direction:column; height:100vh;}
+    header { background:#1a1c1d; padding:10px 20px; font-size:18px; font-weight:bold;}
+    .video-container { flex:1; display:flex; justify-content:center; align-items:center; gap:10px; padding:10px;}
+    .video-box { position:relative; width:48%; aspect-ratio:16/9; background:black; border-radius:10px; display:flex; align-items:center; justify-content:center; overflow:hidden; border:4px solid transparent; transition:border 0.2s ease-in-out;}
+    .video-box.speaking { border-color:#34c759;}
+    .placeholder { position:absolute; width:40%; height:auto; opacity:0.6;}
+    .name-tag { position:absolute; bottom:8px; left:8px; background:rgba(0,0,0,0.6); padding:4px 8px; border-radius:5px; font-size:14px;}
+    .controls { background:#2c2f33; padding:12px; display:flex; justify-content:center; gap:20px;}
+    .controls button { background:#3c4043; color:white; border:none; padding:10px 20px; border-radius:8px; cursor:pointer; font-size:14px; transition:0.2s;}
+    .controls button:hover { background:#55595e;}
+    .controls button.end { background:#d9534f;}
+    .controls button.end:hover { background:#c9302c;}
+    .subtitle { position:absolute; bottom:40px; left:50%; transform:translateX(-50%); background:rgba(0,0,0,0.6); padding:4px 8px; border-radius:5px; font-size:14px; max-width:90%; text-align:center;}
+  </style>
+</head>
+<body>
+  <header>Interview Session</header>
+
+  <div class="video-container">
+    <div class="video-box" id="agentBox">
+      <svg class="placeholder" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="white">
+        <circle cx="32" cy="20" r="12"/>
+        <path d="M8 56c0-13 10-20 24-20s24 7 24 20v4H8z"/>
+      </svg>
+      <div class="name-tag">HR Agent</div>
+      <div class="subtitle" id="agentSubtitle"></div>
+    </div>
+
+    <div class="video-box" id="localBox">
+      <svg class="placeholder" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="white">
+        <circle cx="32" cy="20" r="12"/>
+        <path d="M8 56c0-13 10-20 24-20s24 7 24 20v4H8z"/>
+      </svg>
+      <div class="name-tag">You</div>
+      <div class="subtitle" id="userSubtitle"></div>
+    </div>
+  </div>
+
+  <div class="controls">
+    <button onclick="startInterview()">Start Interview</button>
+    <button onclick="endTurn()">End Turn</button>
+    <button class="end">End Call</button>
+  </div>
+
+  <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+  <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
