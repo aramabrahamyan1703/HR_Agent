@@ -9,6 +9,12 @@ import vosk
 import json
 import csv
 from datetime import datetime
+
+
+import vosk
+import sounddevice as sd
+import json
+import threading
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -27,11 +33,6 @@ def speak_text_in_memory(text):
 
 
 # Speech-to-text function
-import vosk
-import sounddevice as sd
-import json
-import threading
-
 def transcribe_audio_input():
     model_path = VOSK_PATH  # Path to the Vosk model directory
     full_transcription = ""
