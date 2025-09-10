@@ -82,7 +82,7 @@ def run_interview():
             csv_log_responses("No information available to answer the question.", speaker="Bot")
 
     # Final summary and output
-    speak_text_in_memory("Thank you for completing the interview! Here is the transcript of the interview:")
+    speak_text_in_memory("Thank you for completing the interview!")
 
     for question, response in user_responses.items():
         print(f"- {question}")

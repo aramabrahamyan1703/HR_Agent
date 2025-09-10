@@ -43,9 +43,9 @@
   </div>
 
   <div class="controls">
-    <button onclick="startInterview()">Start Interview</button>
-    <button onclick="endTurn()">End Turn</button>
-    <button class="end">End Call</button>
+    <button id="startBtn" onclick="startInterview()">Start Interview</button>
+    <button id="endBtn" onclick="endTurn()" style="display:none;">End Turn</button>
+    <button class="end" onclick="endCall()">End Call</button>
   </div>
 
   <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
