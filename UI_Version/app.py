@@ -7,7 +7,7 @@ import os, signal
 import main
 from main import speak_text_in_memory
 
-from UI_Version.global_control import event_queue
+from global_control import event_queue
 import main
 from flask_socketio import SocketIO
 

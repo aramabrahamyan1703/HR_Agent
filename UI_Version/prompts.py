@@ -1,6 +1,6 @@
 from langchain.prompts import PromptTemplate
 from langchain.chains import LLMChain
-from CLI_Version.config import llm
+from config import llm
 
 # Check if LLM is initialized before creating chains
 if llm is None:

@@ -2,18 +2,18 @@ import os
 import subprocess
 import time
 from itertools import tee
-from UI_Version.global_control import event_queue
+from global_control import event_queue
 
 # Import everything from other files
-from CLI_Version.config import interview_questions, FAQ_DOCUMENT
-from CLI_Version.prompts import (
+from config import interview_questions, FAQ_DOCUMENT
+from prompts import (
     validation_chain,
     json_chain,
     summary_chain,
     qa_chain,
     no_question_chain,
 )
-from CLI_Version.utils import (
+from utils import (
     speak_text_in_memory,
     transcribe_audio_input,
     json_output_responses,

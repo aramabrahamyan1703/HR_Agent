@@ -9,7 +9,7 @@ import vosk
 import json
 import csv
 from datetime import datetime
-from UI_Version.global_control import event_queue
+from global_control import event_queue
 
 # TTS function
 def speak_text_in_memory(text):
